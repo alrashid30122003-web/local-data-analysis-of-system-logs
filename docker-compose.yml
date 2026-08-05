@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  mailserver:
+    image: mailserver/docker-mailserver:latest
+    container_name: office-mailserver
+    hostname: mail
+    domainname: localoffice.local
+    ports:
+      - "25:25"     # SMTP
+      - "587:587"   # SMTP Submission
+      - "143:143"   # IMAP
+      - "993:993"   # IMAPS
+    environment:
+      - POSTFIX_MESSAGE_SIZE_LIMIT=10485760
+      - ENABLE_SPAMASSASSIN=0
+      - ENABLE_CLAMAV=0
+      - ENABLE_FAIL2BAN=0
+      - ENABLE_POSTGRESQL=0
+      - ONE_DIR=1
+      - DOCKER_MAILSERVER_SPOOF_PROTECTION=0
+      - LOG_LEVEL=info
+    volumes:
+      - maildata:/var/mail
+      - mailstate:/var/mail-state
+      - maillogs:/var/log/mail
+      - ./config/mailserver/postfix-accounts.cf:/tmp/docker-mailserver/postfix-accounts.cf
+      - ./config/mailserver/postfix-virtual.cf:/tmp/docker-mailserver/postfix-virtual.cf
+    restart: always
+
+  samba:
+    build:
+      context: ./docker/samba
+      dockerfile: Dockerfile
+    container_name: office-samba
+    ports:
+      - "1139:139"
+      - "1445:445"
+    volumes:
+      - sambadata_public:/shares/public
+      - sambadata_hr:/shares/hr
+      - sambadata_finance:/shares/finance
+    restart: always
+
+  cups:
+    build:
+      context: ./docker/cups
+      dockerfile: Dockerfile
+    container_name: office-cups
+    ports:
+      - "631:631"
+    volumes:
+      - cups_spool:/var/spool/cups
+      - cups_pdf_out:/var/spool/cups-pdf/ANONYMOUS
+    restart: always
+
+volumes:
+  maildata:
+  mailstate:
+  maillogs:
+  sambadata_public:
+  sambadata_hr:
+  sambadata_finance:
+  cups_spool:
+  cups_pdf_out:

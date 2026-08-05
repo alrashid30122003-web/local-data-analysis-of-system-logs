@@ -1,0 +1,6 @@
+# Format: user@domain|password_or_hash
+admin@localoffice.local|AdminPassword123!
+user1@localoffice.local|User1Password123!
+user2@localoffice.local|User2Password123!
+hr@localoffice.local|HrPassword123!
+finance@localoffice.local|FinPassword123!
